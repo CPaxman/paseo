@@ -55,7 +55,7 @@ describe("antigravity usage source", () => {
 
   it("reports a signed-out agy as rejected and other failures as errors", async () => {
     const signedOut = await fetchUsage(async () => {
-      throw new Error("Not logged in");
+      throw new Error("Authentication required. Please visit the URL to log in:");
     });
     expect(signedOut).toMatchObject({ status: "unavailable", problem: { kind: "rejected" } });
     await expect(

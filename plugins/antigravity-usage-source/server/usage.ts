@@ -13,7 +13,8 @@ import {
   type UsageWindow,
 } from "@getpaseo/plugin/server/usage";
 
-// agy owns its login and token refresh; asking it for `/usage` means this source never reads
+// Signed out, agy prints "Authentication required" and waits for a browser login, which the
+// execFile timeout ends. agy owns its login and token refresh; asking it for `/usage` means this source never reads
 // or writes a credential store. The command answers from the quota API without a model turn.
 export type RunAgy = () => Promise<string>;
 
@@ -73,7 +74,9 @@ export async function fetchUsage(run: RunAgy = runAgy): Promise<UsageReport> {
     stdout = await run();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (/not (logged|signed) in|login required|unauthenticated/i.test(message)) {
+    if (
+      /authentication required|not (logged|signed) in|login required|unauthenticated/i.test(message)
+    ) {
       return unavailable({ kind: "rejected", status: 401, refreshedBy: "agy" });
     }
     throw new Error(`agy /usage failed: ${message}`);
